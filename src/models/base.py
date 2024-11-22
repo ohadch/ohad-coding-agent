@@ -9,7 +9,7 @@ Base = declarative_base()
 SQLModel.metadata = Base.metadata
 
 
-class BaseTable(SQLModel, table=True):
+class BaseTable(SQLModel):
     id: Optional[int] = Field(default=None, primary_key=True)
     created_at: Optional[datetime] = Field(
         sa_column=Column(

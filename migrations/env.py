@@ -4,7 +4,7 @@ import dotenv
 
 dotenv.load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", ".env"))
 
-from src.models.base import Base
+from src.models import Base
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
