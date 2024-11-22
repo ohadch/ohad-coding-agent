@@ -1,15 +1,13 @@
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import DateTime, func, Column
+from sqlalchemy import Column, String, DateTime, func
 from sqlmodel import Field, SQLModel
 
-from src.types.enums import FeatureRequestState
 
+class GitRepository(SQLModel, table=True):
 
-class FeatureRequest(SQLModel, table=True):
-
-    __tablename__ = "feature_requests"
+    __tablename__ = "git_repositories"
 
     id: Optional[int] = Field(default=None, primary_key=True)
     created_at: Optional[datetime] = Field(
@@ -22,6 +20,5 @@ class FeatureRequest(SQLModel, table=True):
             DateTime(timezone=True), onupdate=func.now(), nullable=True
         )
     )
-    title: str
-    prompt: str
-    state: FeatureRequestState
+    local_path: Optional[str] = Field(sa_column=Column(String, nullable=True, unique=True))
+    remote_url: Optional[str] = Field(sa_column=Column(String, nullable=True, unique=True))
