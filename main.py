@@ -1,32 +1,32 @@
-import logging
-
 from dotenv import load_dotenv
-
-from src.settings import get_settings
-
 load_dotenv()
 
+import logging
+import threading
 
-from openai import OpenAI
+import uvicorn
+
+from src.lib.queue_client.rabbitmq_queue_client import RabbitMqQueueClient
+from src.settings import get_settings
 
 logger = logging.getLogger(__name__)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s", force=True
+    )
+
     settings = get_settings()
 
-    client = OpenAI(
-        base_url=settings.openai_base_url,
-    )
+    # Notifications consumer thread
+    rabbitmq_client = RabbitMqQueueClient.from_env()
 
-    response = client.chat.completions.create(
-        model=GPT_MODEL,
-        messages=[
-            {
-                "role": "user",
-                "content": "What is the capital of the United States?"
-            }
-        ],
-        temperature=0,
-    )
+    for queue_name in ["new_feature_requests"]:
+        notifications_consumer_thread = threading.Thread(
+            target=lambda: rabbitmq_client.consume_messages(queue_name=queue_name), daemon=True
+        ).start()
 
-    print(response.choices[0].message.content)
+    # Uvicorn thread
+    uvicorn.run(
+        "src:app", host="0.0.0.0", port=settings.port, reload=True, proxy_headers=True
+    )

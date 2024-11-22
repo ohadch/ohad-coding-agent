@@ -10,4 +10,4 @@ logger = logging.getLogger(__name__)
 
 if __name__ == '__main__':
     queue_client = RabbitMqQueueClient.from_env()
-    queue_client.send_message(queue_name='test_queue', message='Hello, world!')
+    queue_client.send_message(queue_name='new_feature_requests', message='Hello, world!')

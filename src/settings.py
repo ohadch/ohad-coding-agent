@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     rabbitmq_port: int
     rabbitmq_user: str
     rabbitmq_password: str
+    port: int = 8234
+    default_page_size: int = 100
 
 
 
