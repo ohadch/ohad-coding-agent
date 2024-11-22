@@ -33,6 +33,10 @@ class CodingService:
             ]
             
             Additional Requirements:
+            Always create an EXPLANATION.md file in the root directory of the repository that explains the changes made.
+            The code that I showed you is the most important - you must take it into account when implementing the feature.
+            If a file already exists, update the file with the new content and do not create a new file.
+            Make sure to look for files if they are similar to those that you are creating or updating.
             Only return the JSON object. No additional text or explanation.
             The content for each file must be JSON-serializable.
             Ensure your response reflects all necessary changes across multiple files.
@@ -103,27 +107,15 @@ class CodingService:
     def learn_code(self, file_abs_path_to_content: Dict[str, str]):
         self._logger.info("Teaching the llm the code")
 
-        stringified_code = ""
-
         for file_abs_path, content in file_abs_path_to_content.items():
-            stringified_code += f"""
-            #########################
-            # {file_abs_path}
-            {content}
-            #########################
-            """
-
-        self._llm_client.send_message(
-            f"""
-            I would like to teach you some code.
-            The code is in the following format:
-            {{ file_abs_path: content }}
-            Here is the code I would like to teach you:
-            ===============================================================================================
-            {json.dumps(file_abs_path_to_content)}
-            ===============================================================================================
-            """,
-            add_to_memory_without_response=True
-        )
+            self._llm_client.send_message(
+                f"""
+                #########################
+                # {file_abs_path}
+                {content}
+                #########################
+                """,
+                add_to_memory_without_response=True
+            )
 
         self._logger.info("Taught the llm the code")

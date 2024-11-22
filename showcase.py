@@ -15,7 +15,7 @@ if __name__ == '__main__':
     coding_service.learn_code(file_abs_path_to_content=contents)
     code_feature_files = coding_service.code_feature(
         task="""
-        Implement the remove_todo method in the TodoService class that is located in src/services/todo_service.py
+        Add a readme file summarizing the code that i showed you previously
         """,
         local_repo_path=local_repo_path
     )
