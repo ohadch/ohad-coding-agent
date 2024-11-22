@@ -1,17 +1,21 @@
 import logging
 
 from dotenv import load_dotenv
+
+from src.settings import get_settings
+
 load_dotenv()
 
-from src.settings import OPENAI_BASE_URL, GPT_MODEL
 
 from openai import OpenAI
 
 logger = logging.getLogger(__name__)
 
 if __name__ == '__main__':
+    settings = get_settings()
+
     client = OpenAI(
-        base_url=OPENAI_BASE_URL
+        base_url=settings.openai_base_url,
     )
 
     response = client.chat.completions.create(
