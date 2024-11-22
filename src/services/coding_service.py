@@ -5,7 +5,6 @@ from typing import Dict, Optional
 
 from src.lib.llm_client import llm_client_factory
 from src.services.repository_reader_service import RepositoryReaderService
-from src.utils.exceptions import BadLlmResponseError
 
 
 class CodingService:
@@ -37,6 +36,22 @@ class CodingService:
             }
 
         return file_to_content
+
+    def write_code(self, file_abs_path_to_content: Dict[str, str], local_repo_path: str):
+        if len(local_repo_path) < 20:
+            raise ValueError("local_repo_path is too short")
+
+        for idx, (file_abs_path, content) in enumerate(file_abs_path_to_content.items()):
+            self._logger.info(f"Writing file {idx + 1} of {len(file_abs_path_to_content)}")
+
+            if not file_abs_path.startswith(local_repo_path):
+                raise ValueError(f"file_abs_path {file_abs_path} does not start with local_repo_path {local_repo_path}")
+
+            with open(file_abs_path, "w") as f:
+                self._logger.info(f"Writing content to file: {file_abs_path}")
+                f.write(content)
+
+        self._logger.info("All files written successfully")
 
     def learn_code(self, file_abs_path_to_content: Dict[str, str]):
         self._logger.info("Teaching the llm the code")
