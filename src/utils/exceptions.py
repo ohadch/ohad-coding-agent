@@ -1,0 +1,2 @@
+class BadLlmResponseError(Exception):
+    pass

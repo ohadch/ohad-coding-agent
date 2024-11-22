@@ -2,6 +2,7 @@ from openai import OpenAI
 
 from src.lib.llm_client.llm_client import LlMClient
 from src.settings import get_settings
+from src.types.schema import LlmMessage
 
 
 class OpenAiLlMClient(LlMClient):
@@ -19,18 +20,21 @@ class OpenAiLlMClient(LlMClient):
             base_url=settings.openai_base_url,
         )
 
-        return cls(openai_client=client, model=settings.openai_model)
+        return cls(openai_client=client, model=settings.gpt_model)
 
-    def send_message(self, message: str, role: str = "user", **kwargs) -> str:
+    def _send_message_implementation_specific_logic(self, message: LlmMessage, **kwargs) -> LlmMessage:
         response = self._openai_client.chat.completions.create(
             model=self._model,
             messages=[
-                {
-                    "role": role,
-                    "content": message
-                }
+                *self._memory,
+                message.model_dump(mode="json")
             ],
             **kwargs
         )
 
-        return response.choices[0].message.content
+        llm_response = LlmMessage(
+            role="assistant",
+            content=response.choices[0].message.content
+        )
+
+        return llm_response
