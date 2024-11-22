@@ -1,3 +1,5 @@
+import sys
+
 from openai import OpenAI
 
 from src.lib.llm_client.llm_client import LlMClient
@@ -29,12 +31,23 @@ class OpenAiLlMClient(LlMClient):
                 *self._memory,
                 message.model_dump(mode="json")
             ],
+            stream=True,
             **kwargs
         )
 
+        response_text = ""
+
+        for chunk in response:
+            updated_part = chunk.choices[0].delta.content
+            response_text += updated_part
+
+            # Print the updated response to the console by updating the last line and not adding a new line
+            print(updated_part, end="", flush=True)
+
+
         llm_response = LlmMessage(
             role="assistant",
-            content=response.choices[0].message.content
+            content=response_text
         )
 
         return llm_response

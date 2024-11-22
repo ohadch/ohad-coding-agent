@@ -8,3 +8,9 @@ class FeatureRequestState(enum.Enum):
     REJECTED = "REJECTED"
     CANCELLED = "CANCELLED"
     ERROR = "ERROR"
+
+
+class CodedFileAction(enum.Enum):
+    CREATE = "CREATE"
+    UPDATE = "UPDATE"
+    DELETE = "DELETE"

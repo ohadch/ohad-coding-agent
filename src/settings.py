@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     port: int = 8234
     default_page_size: int = 100
     git_repos_path: str = "/tmp/git_repos"
+    showcase_repo_path: str = "/tmp/showcase_repo"
 
 
 
