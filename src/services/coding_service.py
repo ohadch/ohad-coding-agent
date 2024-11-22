@@ -21,11 +21,19 @@ class CodingService:
         file_to_content = self._llm_client.send_message_expecting_json_response(
             f"""
             You are a senior software engineer at a tech company.
-            Based on the code i showed you before, I would like to code the following feature: {task}
-            As your work may affect multiple files, please return a json response with the following format:
-            Do not include any introductory text, just the json response.
-            {{ file_path: content }}
-            I am going to feed your response directly to a json parser, so it must be valid json.
+            Based on the code I showed you previously, please implement the following feature: {task}.
+            
+            Your response must be a valid JSON object with the following format:
+            
+            {{
+              "file_path": "content"
+            }}
+            
+            Additional Requirements:
+            Only return the JSON object. No additional text or explanation.
+            The content for each file must be JSON-serializable.
+            Ensure your response reflects all necessary changes across multiple files.
+            I will feed your response directly to a JSON parser, so it must strictly adhere to the JSON format.
             """
         )
 

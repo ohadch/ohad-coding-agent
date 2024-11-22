@@ -18,6 +18,8 @@ class LlMClient(abc.ABC):
             return json.loads(response)
         except json.JSONDecodeError:
             self._logger.error(f"Could not parse response as json: {response}")
+            # Remove the last two messages from memory since they are invalid
+            self._memory = self._memory[:-2]
             if num_attempts > 0:
                 self._logger.info(f"Retrying {num_attempts} more times")
                 return self.send_message_expecting_json_response(
