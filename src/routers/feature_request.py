@@ -1,5 +1,6 @@
 import re
 import shutil
+import threading
 import uuid
 from typing import List, Optional
 
@@ -12,6 +13,7 @@ from src.crud.feature_request import FeatureRequestCrud
 
 from src.database import get_db
 from src.schema import FeatureRequestUpdateSchema, FeatureRequestSearchSchema, FeatureRequestCreateSchema
+from src.services.coding_service import CodingService
 from src.services.git_service import GitService
 from src.settings import Settings, get_settings
 from src.types.enums import FeatureRequestState
@@ -164,3 +166,28 @@ async def delete(id_: int, db: Session = Depends(get_db)):
     shutil.rmtree(feature_request.git_repo_local_path)
 
     crud.delete(db=db, id_=id_)
+
+
+@app.post(
+    f"/{prefix}/{{id_}}/start-coding",
+    tags=tags,
+    response_model=FeatureRequest,
+    summary=f"Start coding on {prefix}",
+)
+async def start_coding(id_: int, db: Session = Depends(get_db)):
+    """
+    Start coding on feature_request
+    :param id_: FeatureRequest ID
+    :param db: Database session
+    :return: Updated feature_request
+    """
+    feature_request = crud.get_by_id(db=db, id_=id_)
+
+    if not feature_request:
+        raise HTTPException(status_code=404, detail=f"{prefix.title()} not found")
+
+    coding_service = CodingService()
+
+    threading.Thread(target=coding_service.code_feature, kwargs={"feature_request": feature_request}).start()
+
+    return feature_request
