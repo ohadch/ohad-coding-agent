@@ -18,12 +18,19 @@ class GitService:
         return repo
 
     def checkout(self, local_repo_path: str, source_branch: str, feature_branch: str):
-        self._logger.info(f"Checking out branch {feature_branch} from repo at {local_repo_path}")
+        self._logger.info(f"Checking out branch {feature_branch} from source branch {source_branch} from repo at {local_repo_path}")
 
         repo = Repo(local_repo_path)
+
+        # If already on the feature branch, return
+        if repo.active_branch.name == source_branch:
+            self._logger.info(f"Already on branch {feature_branch}")
+            return repo
+
         repo.git.checkout(source_branch)
         repo.git.pull()
-        repo.git.checkout(feature_branch, b=feature_branch)
+
+        repo.git.checkout(feature_branch)
 
         self._logger.info(f"Branch {feature_branch} checked out successfully")
         return repo

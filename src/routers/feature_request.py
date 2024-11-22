@@ -1,4 +1,5 @@
 import re
+import shutil
 import uuid
 from typing import List, Optional
 
@@ -154,4 +155,12 @@ async def delete(id_: int, db: Session = Depends(get_db)):
     :param id_: FeatureRequest ID
     :param db: Database session
     """
+    # Delete the git repo
+    feature_request = crud.get_by_id(db=db, id_=id_)
+
+    if len(feature_request.git_repo_local_path) < 20:
+        raise ValueError(f"Invalid git_repo_local_path: {feature_request.git_repo_local_path}")
+
+    shutil.rmtree(feature_request.git_repo_local_path)
+
     crud.delete(db=db, id_=id_)
