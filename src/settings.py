@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     rabbitmq_password: str
     port: int = 8234
     default_page_size: int = 100
+    git_repos_path: str = "/tmp/git_repos"
 
 
 

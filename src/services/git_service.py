@@ -16,3 +16,24 @@ class GitService:
 
         self._logger.info(f"Repo cloned successfully to {local_repo_path}")
         return repo
+
+    def checkout(self, local_repo_path: str, source_branch: str, feature_branch: str):
+        self._logger.info(f"Checking out branch {feature_branch} from repo at {local_repo_path}")
+
+        repo = Repo(local_repo_path)
+        repo.git.checkout(source_branch)
+        repo.git.pull()
+        repo.git.checkout(feature_branch, b=feature_branch)
+
+        self._logger.info(f"Branch {feature_branch} checked out successfully")
+        return repo
+
+    def pull(self, local_repo_path: str):
+        self._logger.info(f"Pulling latest changes from repo at {local_repo_path}")
+
+        repo = Repo(local_repo_path)
+        repo.git.pull()
+
+        self._logger.info(f"Latest changes pulled successfully")
+        return repo
+

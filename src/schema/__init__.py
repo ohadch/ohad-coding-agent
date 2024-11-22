@@ -3,8 +3,3 @@ from .feature_request import (
     FeatureRequestUpdateSchema,
     FeatureRequestSearchSchema,
 )
-from .git_repository import (
-    GitRepositoryCreateSchema,
-    GitRepositoryUpdateSchema,
-    GitRepositorySearchSchema,
-)

@@ -1,3 +1,5 @@
+import re
+import uuid
 from typing import List, Optional
 
 from fastapi import Depends, HTTPException
@@ -9,7 +11,9 @@ from src.crud.feature_request import FeatureRequestCrud
 
 from src.database import get_db
 from src.schema import FeatureRequestUpdateSchema, FeatureRequestSearchSchema, FeatureRequestCreateSchema
+from src.services.git_service import GitService
 from src.settings import Settings, get_settings
+from src.types.enums import FeatureRequestState
 
 crud = FeatureRequestCrud()
 prefix = "feature_requests"
@@ -61,11 +65,39 @@ async def create(data: FeatureRequestCreateSchema, db: Session = Depends(get_db)
     :param data: Data
     :param db: Database session
     """
-    return await crud.create(
+    settings = get_settings()
+
+    feature_branch_name = re.sub(r'\s+', '_', data.title.lower()) + f"_{str(uuid.uuid4())[:8]}"
+    git_repo_local_path = f"{settings.git_repos_path}/{feature_branch_name}"
+
+    feature_request = await crud.create(
         db=db,
-        data=data,
+        data=FeatureRequest(
+            title=data.title,
+            prompt=data.prompt,
+            state=FeatureRequestState.BACKLOG,
+            git_repo_remote_url=data.git_repo_remote_url,
+            git_repo_local_path=git_repo_local_path,
+            feature_branch=feature_branch_name,
+            source_branch=data.source_branch,
+        ),
     )
 
+    git_service = GitService()
+
+    git_service.clone_repo(
+        remote_repo_url=feature_request.git_repo_remote_url,
+        local_repo_path=git_repo_local_path
+    )
+
+    if feature_request.git_repo_local_path and feature_request.feature_branch:
+        git_service.checkout(
+            local_repo_path=feature_request.git_repo_local_path,
+            source_branch=feature_request.source_branch,
+            feature_branch=feature_request.feature_branch
+        )
+
+    return feature_request
 
 @app.get(
     f"/{prefix}/{{id_}}",

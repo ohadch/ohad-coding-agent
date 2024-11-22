@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional
 
 from sqlalchemy import DateTime, func, Column
-from sqlmodel import Field, SQLModel, Relationship
+from sqlmodel import Field, SQLModel
 
 from src.types.enums import FeatureRequestState
 
@@ -25,7 +25,7 @@ class FeatureRequest(SQLModel, table=True):
     title: str
     prompt: str
     state: FeatureRequestState
-
-    git_repo_local_path: Optional[str] = None
-    git_repo_remote_url: Optional[str] = None
-    feature_branch: Optional[str] = None
+    git_repo_remote_url: str
+    git_repo_local_path: str
+    feature_branch: str
+    source_branch: str = "main"
