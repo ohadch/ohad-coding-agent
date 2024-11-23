@@ -12,7 +12,9 @@ class LlMClient(abc.ABC):
         self._logger = logging.getLogger(__name__)
         self._memory: List[LlmMessage] = []
 
-    def send_message_expecting_json_response(self, message: str, num_attempts: int = 10, **kwargs) -> Dict:
+    def send_message_expecting_json_response(
+        self, message: str, num_attempts: int = 10, **kwargs
+    ) -> Dict:
         response = self.send_message(message, **kwargs)
         try:
             return json.loads(response)
@@ -23,9 +25,7 @@ class LlMClient(abc.ABC):
             if num_attempts > 0:
                 self._logger.info(f"Retrying {num_attempts} more times")
                 return self.send_message_expecting_json_response(
-                    message=message,
-                    num_attempts=num_attempts - 1,
-                    **kwargs
+                    message=message, num_attempts=num_attempts - 1, **kwargs
                 )
             raise
 
@@ -33,28 +33,29 @@ class LlMClient(abc.ABC):
         self._memory = []
         self._logger.info("Memory reset successfully")
 
-    def send_message(self, message: str, role: str = "user", add_to_memory_without_response: bool = False, **kwargs) -> str:
-        user_message = LlmMessage(
-            role=role,
-            content=message
-        )
+    def send_message(
+        self,
+        message: str,
+        role: str = "user",
+        add_to_memory_without_response: bool = False,
+        **kwargs,
+    ) -> str:
+        user_message = LlmMessage(role=role, content=message)
 
         if add_to_memory_without_response:
             self._memory.append(user_message)
             return ""
 
         response = self._send_message_implementation_specific_logic(
-            message=user_message,
-            **kwargs
+            message=user_message, **kwargs
         )
 
-        self._memory.extend([
-            user_message,
-            response
-        ])
+        self._memory.extend([user_message, response])
 
         return response.content
 
     @abc.abstractmethod
-    def _send_message_implementation_specific_logic(self, message: LlmMessage, **kwargs) -> LlmMessage:
+    def _send_message_implementation_specific_logic(
+        self, message: LlmMessage, **kwargs
+    ) -> LlmMessage:
         pass

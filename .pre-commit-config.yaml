@@ -1,1 +1,13 @@
-repos:\n  - repo: https://github.com/pre-commit/pre-commit-hooks\n    rev: v4.3.0 # Use the appropriate tag or branch\n    hooks:\n      - id: trailing-whitespace\n      - id: end-of-file-fixer\n      - id: check-yaml\n      - id: debug-statements
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.3.0 # Use the appropriate tag or branch
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: debug-statements
+  - repo: https://github.com/psf/black
+    rev: stable
+    hooks:
+      - id: black
+        language_version: python3.11

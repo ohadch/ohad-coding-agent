@@ -9,7 +9,6 @@ class Settings(BaseSettings):
     repo_path: str
 
 
-
 @lru_cache()
 def get_settings():
     return Settings()

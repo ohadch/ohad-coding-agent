@@ -24,13 +24,12 @@ class OpenAiLlMClient(LlMClient):
 
         return cls(openai_client=client, model=settings.gpt_model)
 
-    def _send_message_implementation_specific_logic(self, message: LlmMessage, **kwargs) -> LlmMessage:
+    def _send_message_implementation_specific_logic(
+        self, message: LlmMessage, **kwargs
+    ) -> LlmMessage:
         response = self._openai_client.chat.completions.create(
             model=self._model,
-            messages=[
-                *self._memory,
-                message.model_dump(mode="json")
-            ],
+            messages=[*self._memory, message.model_dump(mode="json")],
             stream=True,
             **kwargs
         )
@@ -44,10 +43,6 @@ class OpenAiLlMClient(LlMClient):
             # Print the updated response to the console by updating the last line and not adding a new line
             print(updated_part, end="", flush=True)
 
-
-        llm_response = LlmMessage(
-            role="assistant",
-            content=response_text
-        )
+        llm_response = LlmMessage(role="assistant", content=response_text)
 
         return llm_response

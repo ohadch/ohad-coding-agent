@@ -15,7 +15,9 @@ class CodingService:
         self._llm_client = llm_client_factory()
         self._repo_reader_service = RepositoryReaderService()
 
-    def code_feature(self, task: str, local_repo_path: Optional[str] = None) -> List[CodedFileResponse]:
+    def code_feature(
+        self, task: str, local_repo_path: Optional[str] = None
+    ) -> List[CodedFileResponse]:
         self._logger.info(f"Asking the llm to code the feature: {task}")
 
         # Based on the feature request, ask the llm to code the feature.
@@ -24,14 +26,14 @@ class CodingService:
             f"""
             You are a senior software engineer at a tech company.
             Based on the code I showed you previously, please implement the following feature: {task}.
-            
+
             Your response must be a valid JSON object with the following format:
-            
+
             [
             {{ "file_path": "file_path_1", "content (optional)": "content_1", action: "CREATE" | "UPDATE" | "DELETE" }},
             {{ "file_path": "file_path_2", "content (optional)": "content_1", action: "CREATE" | "UPDATE" | "DELETE" }},
             ]
-            
+
             Additional Requirements:
             Always create an EXPLANATION.md file in the root directory of the repository that explains the changes made.
             The code that I showed you is the most important - you must take it into account when implementing the feature.
@@ -44,14 +46,14 @@ class CodingService:
             """
         )
 
-        files = [
-            CodedFileResponse.model_validate(file)
-            for file in files
-        ]
+        files = [CodedFileResponse.model_validate(file) for file in files]
 
         if local_repo_path:
             for file in files:
-                file.file_path = os.path.join(local_repo_path, file.file_path.replace(local_repo_path, "").lstrip("/"))
+                file.file_path = os.path.join(
+                    local_repo_path,
+                    file.file_path.replace(local_repo_path, "").lstrip("/"),
+                )
 
         return files
 
@@ -68,16 +70,14 @@ class CodingService:
     def _handle_coded_feature_file_response(self, coded_file: CodedFileResponse):
         return {
             CodedFileAction.CREATE: lambda: self._create_file(
-                file_abs_path=coded_file.file_path,
-                content=coded_file.content
+                file_abs_path=coded_file.file_path, content=coded_file.content
             ),
             CodedFileAction.UPDATE: lambda: self._update_file(
-                file_abs_path=coded_file.file_path,
-                content=coded_file.content
+                file_abs_path=coded_file.file_path, content=coded_file.content
             ),
             CodedFileAction.DELETE: lambda: self._delete_file(
                 file_abs_path=coded_file.file_path
-            )
+            ),
         }[coded_file.action]()
 
     def _create_file(self, file_abs_path: str, content: str):
@@ -115,7 +115,7 @@ class CodingService:
                 {content}
                 #########################
                 """,
-                add_to_memory_without_response=True
+                add_to_memory_without_response=True,
             )
 
         self._logger.info("Taught the llm the code")

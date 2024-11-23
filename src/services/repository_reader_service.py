@@ -5,11 +5,11 @@ from typing import Dict, List
 
 class RepositoryReaderService:
     EXCLUDED_FOLDERS = [
-        '.git',
-        '.idea',
-        'venv',
-        '__pycache__',
-        'node_modules',
+        ".git",
+        ".idea",
+        "venv",
+        "__pycache__",
+        "node_modules",
     ]
 
     def __init__(self):
@@ -17,7 +17,9 @@ class RepositoryReaderService:
 
     # a function that returns a dict of all files under a directory with their content.
     # the key is the absolute path of the file and the value is the content of the file.
-    def read_files(self, directory: str, include_files: List[str] = None) -> Dict[str, str]:
+    def read_files(
+        self, directory: str, include_files: List[str] = None
+    ) -> Dict[str, str]:
         file_contents = {}
 
         # Walk through the directory tree
@@ -33,7 +35,7 @@ class RepositoryReaderService:
                 file_path = os.path.join(root, file_name)
 
                 try:
-                    with open(file_path, 'r', encoding='utf-8') as file:
+                    with open(file_path, "r", encoding="utf-8") as file:
                         content = file.read()
                         file_contents[file_path] = content
                 except Exception as e:
