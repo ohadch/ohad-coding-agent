@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Dict
+from typing import Dict, List
 
 
 class RepositoryReaderService:
@@ -17,7 +17,7 @@ class RepositoryReaderService:
 
     # a function that returns a dict of all files under a directory with their content.
     # the key is the absolute path of the file and the value is the content of the file.
-    def read_files(self, directory: str) -> Dict[str, str]:
+    def read_files(self, directory: str, include_files: List[str] = None) -> Dict[str, str]:
         file_contents = {}
 
         # Walk through the directory tree
@@ -27,7 +27,7 @@ class RepositoryReaderService:
                 continue
 
             for file_name in files:
-                if file_name.startswith('.'):
+                if include_files and file_name not in include_files:
                     continue
 
                 file_path = os.path.join(root, file_name)

@@ -11,7 +11,13 @@ if __name__ == '__main__':
     while True:
         settings = get_settings()
         local_repo_path = settings.repo_path
-        contents = RepositoryReaderService().read_files(directory=local_repo_path)
+
+        include_files = input("Do you want to include only specific files? "
+                              "If yes, write the file names separated by commas. If no, press enter.\n"
+                              "files: ")
+        include_files = include_files.split(",") if include_files else None
+
+        contents = RepositoryReaderService().read_files(directory=local_repo_path, include_files=include_files)
 
         print(f"Read {len(contents)} files from {local_repo_path}")
         task = input("What do you want me to do? ")
