@@ -15,6 +15,10 @@ if __name__ == '__main__':
         include_files = input("Do you want to include only specific files? "
                               "If yes, write the file names separated by commas. If no, press enter.\n"
                               "files: ")
+
+        if include_files:
+            print(f"Reading only files: {include_files}")
+
         include_files = include_files.split(",") if include_files else None
 
         contents = RepositoryReaderService().read_files(directory=local_repo_path, include_files=include_files)

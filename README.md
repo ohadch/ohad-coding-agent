@@ -1,5 +1,3 @@
-# Ohad PR Helper CLI
-
 ## Overview
 Ohad PR Helper CLI is a powerful tool designed to automatically generate code based on feature requests. It simplifies the process of coding by reading existing files in your repository, understanding the context, and writing new code as per your specifications.
 
@@ -17,10 +15,19 @@ Ohad PR Helper CLI is a powerful tool designed to automatically generate code ba
 
 ## Usage
 Run the CLI using Python:
+
 ```bash
 python cli.py
 ```
 Follow the prompts to specify which files to include (if any) and what feature you want implemented.
 
-## Contributing
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to contribute to this project.
+## Pre-commit Setup
+To ensure code quality before committing, install pre-commit hooks. Follow these steps:
+1. Install the dev requirements file using pip:
+   ```bash
+   pip install -r requirements-dev.txt
+   ```
+2. Run pre-commit to set up the repository hooks:
+   ```bash
+   pre-commit install
+   ```
