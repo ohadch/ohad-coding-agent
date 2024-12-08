@@ -1,8 +1,12 @@
-from dataclasses import dataclass
+import glob
+import json
 
 from dotenv import load_dotenv
 
 load_dotenv()
+
+import os
+from dataclasses import dataclass
 
 from typing import Dict, List
 
@@ -13,16 +17,38 @@ from src.services.repository_reader_service import RepositoryReaderService
 
 
 def read_included_files(local_repo_path: str) -> Dict[str, str]:
-    include_files = input(
-        "Do you want to include only specific files? "
-        "If yes, write the file names separated by commas. If no, press enter.\n"
-        "files: "
+    # Ask the user if he would like to provide glob pattern or specific files
+    response = input(
+        # "Do you want to include only specific files? "
+        # "If yes, please choose a way to include files: "
+        # "1. Glob pattern\n"
+        # "2. Specific files\n"
+        f"""Do you want to include only specific files?
+        If yes, please choose a way to include files:
+        0. Glob pattern
+        1. Specific files
+        2. Read all files
+        """
     )
 
-    if include_files:
-        print(f"Reading only files: {include_files}")
+    if response == "0":
+        include_files_glob = input(
+            "Please provide a glob pattern to include files: "
+        )
 
-    include_files = include_files.split(",") if include_files else None
+        glob_pattern = os.path.join(local_repo_path, include_files_glob)
+        print(f"Using glob pattern: {glob_pattern}")
+        include_files = glob.glob(glob_pattern, recursive=True)
+        include_files = list(set([os.path.basename(file) for file in include_files]))
+    elif response == "1":
+        include_files = input(
+            "Do you want to include only specific files? "
+            "If yes, write the file names separated by commas. If no, press enter.\n"
+            "files: "
+        )
+        include_files = include_files.split(",")
+    else:
+        include_files = None
 
     contents = RepositoryReaderService().read_files(
         directory=local_repo_path,
@@ -49,8 +75,26 @@ def run_code_writing_session(local_repo_path: str):
     print(f"Code written to {local_repo_path} successfully.")
 
 
-def run_bug_finder_session(local_repo_path: str) -> object:
-    raise NotImplementedError
+def run_bug_finder_session(local_repo_path: str):
+    contents = read_included_files(local_repo_path=local_repo_path)
+    bugs_output_dir = os.path.join(local_repo_path, "ohad_bugs")
+
+    for idx, (file_path, content) in enumerate(contents.items()):
+        print(f"Reviewing file {idx + 1}/{len(contents)}: {file_path}")
+        coding_service = CodingService()
+        coding_service.learn_code(file_abs_path_to_content={file_path: content})
+        response = coding_service.find_bugs()
+        bugs_found = response["bugs_found"]
+        bugs = response["issues"]
+
+        if bugs_found and bugs:
+            print(f"Found {len(bugs)} bugs in {file_path}")
+            os.makedirs(bugs_output_dir, exist_ok=True)
+            output_file_path = os.path.join(bugs_output_dir, f"{os.path.basename(file_path)}.bugs.json")
+            with open(output_file_path, "w") as f:
+                print(f"Writing bugs to {output_file_path}")
+                f.write(json.dumps(bugs, indent=4))
+
 
 
 @dataclass
