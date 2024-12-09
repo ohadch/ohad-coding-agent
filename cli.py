@@ -1,5 +1,6 @@
 import glob
 import json
+import logging
 
 from dotenv import load_dotenv
 
@@ -14,6 +15,8 @@ from src import get_settings
 
 from src.services.coding_service import CodingService
 from src.services.repository_reader_service import RepositoryReaderService
+
+logger = logging.getLogger(__name__)
 
 
 def read_included_files(local_repo_path: str) -> Dict[str, str]:
@@ -75,26 +78,64 @@ def run_code_writing_session(local_repo_path: str):
     print(f"Code written to {local_repo_path} successfully.")
 
 
-def run_bug_finder_session(local_repo_path: str):
+def code_review_file(
+    file_path: str,
+    content: str,
+    local_repo_path: str,
+):
+    """
+    This function reads the content of a file and its dependencies, learns the code, and finds issues in the code.
+    :param file_path: The path to the file to be reviewed.
+    :param content: The content of the file to be reviewed.
+    :param local_repo_path: The path to the local repository.
+    """
+    coding_service = CodingService()
+    file_path_to_content = {file_path: content}
+
+    file_dependencies = coding_service.repo_reader_service.find_dependencies_by_file(
+        file_path=file_path,
+        local_repo_path=local_repo_path
+    )
+
+    for dep_idx, file_dependency_path in enumerate(file_dependencies):
+        if not os.path.isfile(file_dependency_path):
+            logger.warning(f"Dependency file {file_dependency_path} does not exist, skipping.")
+            continue
+
+        logger.info(
+            f"Reading dependency {dep_idx + 1}/{len(file_dependencies)} for the file {file_path}: {file_dependency_path}")
+
+        with open(file_dependency_path, "r") as file:
+            file_dependency_content = file.read()
+
+        file_path_to_content[file_dependency_path] = file_dependency_content
+
+    coding_service.learn_code(file_abs_path_to_content=file_path_to_content)
+    issues = coding_service.perform_code_review()
+    return issues
+
+
+def run_code_review_session(local_repo_path: str):
     contents = read_included_files(local_repo_path=local_repo_path)
     bugs_output_dir = os.path.join(local_repo_path, "ohad_bugs")
 
     for idx, (file_path, content) in enumerate(contents.items()):
-        print(f"Reviewing file {idx + 1}/{len(contents)}: {file_path}")
-        coding_service = CodingService()
-        coding_service.learn_code(file_abs_path_to_content={file_path: content})
-        response = coding_service.find_bugs()
-        bugs_found = response["bugs_found"]
-        bugs = response["issues"]
+        print(f"Searching for issues in file {idx + 1}/{len(contents)}: {file_path}")
+        issues = code_review_file(
+            file_path=file_path,
+            content=content,
+            local_repo_path=local_repo_path,
+        )
 
-        if bugs_found and bugs:
-            print(f"Found {len(bugs)} bugs in {file_path}")
-            os.makedirs(bugs_output_dir, exist_ok=True)
-            output_file_path = os.path.join(bugs_output_dir, f"{os.path.basename(file_path)}.bugs.json")
-            with open(output_file_path, "w") as f:
-                print(f"Writing bugs to {output_file_path}")
-                f.write(json.dumps(bugs, indent=4))
+        if not issues:
+            print(f"No issues found in {file_path}, skipping.")
+            continue
 
+        os.makedirs(bugs_output_dir, exist_ok=True)
+        output_file_path = os.path.join(bugs_output_dir, f"{os.path.basename(file_path)}.issues.json")
+        with open(output_file_path, "w") as f:
+            print(f"Writing issues to {output_file_path}")
+            f.write(json.dumps(issues, indent=4))
 
 
 @dataclass
@@ -115,7 +156,7 @@ def main():
         ),
         MenuOption(
             option="Bug Finder",
-            func=lambda: run_bug_finder_session(
+            func=lambda: run_code_review_session(
                 local_repo_path=local_repo_path
             )
         ),
